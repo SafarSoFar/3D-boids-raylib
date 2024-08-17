@@ -1,170 +1,83 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <iostream>
 #include <vector>
+#include <random>
 using namespace std;
 
-//#define LOGIC_OFF = 0;
-//#define LOGIC_ON = 1;
 
-#define CONNECTION_RADIUS 15.0f
-
-// to make more human-readable while writing functions
-enum LogicState{
-	LOGIC_OFF = 0,
-	LOGIC_ON = 1,
-};
-
-class Wire{
+class Boid{
 	public:
-		Vector2 startPos;
-		Vector2 endPos;
-		LogicState curLogicState;
-
-
-		Wire(Vector2 _startPos, Vector2 _endPos){
-			this->startPos = _startPos;	
-			this->endPos = _endPos;	
+		Vector3 pos;
+		Vector3 rotation;
+		void Move(){
+            if(this->pos.x == this->destination.x && this->pos.y == this->destination.y && this->pos.z == this->destination.z){
+                std::random_device rd;
+                std::default_random_engine eng(rd());
+                std::uniform_real_distribution<float> distr(-5.0f,5.0f);  
+                this->destination = Vector3{distr(eng), distr(eng), distr(eng)};
+            }
+            this->pos = Vector3MoveTowards(this->pos, this->destination, speed);
 		}
-	
+		Boid(){
+			this->pos = Vector3Zero();
+			this->rotation = Vector3Zero();
+			this->destination = Vector3Zero();
+		}
+	private:
+		Vector3 destination;
+        float speed = 1.0f;
 };
-
-class Connection{
-	public:
-		Vector2 pos;
-		vector<Wire> connectedWires;
-
-		Connection(Vector2 _pos){
-			this->pos = _pos;
-			connectedWires = vector<Wire>();
-		}
-
-		void AddWire(Wire wireToAdd){
-			connectedWires.push_back(wireToAdd);
-		}
-
-		void ChangeLogicState(LogicState logicState){
-			for(int i = 0; i < this->connectedWires.size(); i++){
-				connectedWires[i].curLogicState = logicState;
-			}
-		}
-};
-
-
-
-/// @brief Returns pointer to a collider connection or nullptr if no connection collision happened 
-/// @param connectionsVec 
-/// @param collisionPos 
-/// @return 
-Connection* CheckPosCollisionToConnections(vector<Connection> &connectionsVec, Vector2 collisionPos){
-	for(int i = 0; i < connectionsVec.size(); i++){
-		if(CheckCollisionPointCircle(collisionPos,connectionsVec[i].pos, CONNECTION_RADIUS)){
-			return &connectionsVec[i];
-		}
-	}
-	return nullptr;
-}
 
 
 int main ()
 {
-	const int windowWidth = 800;
-	const int windowHeight = 640;
-	bool isWireStarted = false;
+	const int screenWidth = 800;
+    const int screenHeight = 640;
 
-	InitWindow(windowWidth, windowHeight, "Logic gates");
+	InitWindow(screenWidth, screenHeight, "Boids");
 
-	vector<Wire> wiresVec = vector<Wire>();
-	vector<Connection> connectionsVec = vector<Connection>();
+    Camera camera = { 0 };
+    camera.position = Vector3{10.0f, 10.0f, 10.0f}; // Camera position
+    camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
+    camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    camera.fovy = 45.0f;                                // Camera field-of-view Y
+    camera.projection = CAMERA_PERSPECTIVE; 
 
-	Vector2 zeroVec = Vector2{0,0};
 
-	Vector2 curWireStart;
-	Vector2 curWireEnd;
-	Connection* startWireConnection;
-	Connection* endWireConnection;
-	
-	while (!WindowShouldClose())
-	{
+    DisableCursor();
+    SetTargetFPS(60);  
 
-		BeginDrawing();
-		ClearBackground(GRAY);
-		DrawText("Press Q to remove everything", 0,0, 30, BLACK);
-		for(int i = 0; i < wiresVec.size();i++){
-			DrawLineEx(wiresVec[i].startPos, wiresVec[i].endPos, 5.0f, BLACK);
-		}
-		for(int i = 0; i < connectionsVec.size(); i++){
-			DrawCircleV(connectionsVec[i].pos, CONNECTION_RADIUS,YELLOW);			
-		}
+    Boid boid = Boid();
 
-		if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+    while (!WindowShouldClose())    // Detect window close button or ESC key
+    {
 
-			Vector2 curMousePos = GetMousePosition();
-			bool hasConnection = false;
+        UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        
 
-			if(!isWireStarted){
-				startWireConnection = CheckPosCollisionToConnections(connectionsVec, curMousePos);
-				if(startWireConnection != nullptr){
-					curWireStart = startWireConnection->pos;
-				}
-				else{
-					curWireStart = curMousePos;
-				}
+        BeginDrawing();
 
-				isWireStarted = true;
-			}
-			
-			endWireConnection = CheckPosCollisionToConnections(connectionsVec, curMousePos);			
-			if(endWireConnection != nullptr){
-				curWireEnd = endWireConnection->pos;
-			}
-			else{
-				curWireEnd = curMousePos;
-			}
+            ClearBackground(RAYWHITE);
 
-			DrawLineEx(curWireStart, curWireEnd, 5.0f, BLACK);
-		}
-		else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
-			isWireStarted = false;
+            BeginMode3D(camera);
 
-			// means that new wire looped on the connection and can cause unwanted behaviour
-			if(startWireConnection == endWireConnection){
-				std::cout<<"\nWARNING: a shorted wire presented on the scheme\n";
-			}
+			DrawCube(boid.pos, 5.0f,5.0f,5.0f, BLACK);
+            boid.Move();
+            EndMode3D();
 
-			Wire newWire = Wire(curWireStart, curWireEnd);
 
-			curWireStart = zeroVec;
-			curWireEnd = zeroVec;
+        EndDrawing();
 
-			wiresVec.push_back(newWire);
+    }
 
-			if(startWireConnection != nullptr){
-				startWireConnection->AddWire(newWire);
-			}			
-			else{
-				Connection newStartWireConnection = Connection(newWire.startPos);
-				connectionsVec.push_back(newStartWireConnection);
-			}
+    /*UnloadMusicStream(music);
+    CloseAudioDevice();*/
 
-			if(endWireConnection != nullptr){
-				endWireConnection->AddWire(newWire);
-			}
-			else{
-				Connection newEndWireConnection = Connection(newWire.endPos);
-				connectionsVec.push_back(newEndWireConnection);
-			}
-		}
-			
-		if(IsKeyPressed(KEY_Q)){
-			wiresVec.clear();
-			connectionsVec.clear();
-		}
-		
-		EndDrawing();
-	}
-	wiresVec.clear();
-	connectionsVec.clear();
-	CloseWindow();
-	return 0;
+
+    CloseWindow();        // Close window and OpenGL context
+
+
+    return 0;
 }
 
