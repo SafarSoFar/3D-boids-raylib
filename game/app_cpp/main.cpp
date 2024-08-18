@@ -17,10 +17,11 @@ bool operator!=(Vector3 lhs, Vector3 rhs){
 
 class Boid;
 
-float g_boidRadius = 0.5f;
+float g_boidSizeRadius = 0.5f;
 float g_boidDestinationLimit = 15.0f;
-float g_boidSeparationRadius = 1.5f;
-float g_boidAvoidanceSpeed = 1.5f;
+float g_boidAvoidanceRadius = 1.0f;
+float g_boidVisionRadius = 6.0f;
+float g_boidAlignment = 0.5f;
 const int g_boidsAmount = 100;
 vector<Boid> g_boids;
 
@@ -37,7 +38,9 @@ class Boid{
 		Vector3 pos;
 		float rotation;
         void Behave(){
-            Avoid();
+            if(!Avoid()){
+                Align();
+            }
             Move();
 
         }
@@ -52,28 +55,58 @@ class Boid{
                 this->destination = GetRandomVec3();
                 this->rotation = atan2(destination.x, destination.y) * -57.29578f;
             }
+            std::cout<<this->destination.x<<'\n';
             this->pos = Vector3MoveTowards(this->pos, this->destination, speed);
+            
         }
-        void Avoid(){
+        bool Avoid(){
             bool isAvoiding = false;
             for(int i = 0; i < g_boidsAmount; i++){
                 if(g_boids[i].pos != this->pos){
-                    if(CheckCollisionSpheres(this->pos, g_boidSeparationRadius, g_boids[i].pos, g_boidSeparationRadius)){
+                    if(CheckCollisionSpheres(this->pos, g_boidAvoidanceRadius, g_boids[i].pos, g_boidSizeRadius)){
                         if(!isAvoiding){
                             isAvoiding = true;
-                            this->destination = Vector3Zero();
+                            //this->destination = Vector3Zero();
                         }
-                        this->destination.x += (this->pos.x - g_boids[i].pos.x) * 10; 
-                        this->destination.y += (this->pos.y - g_boids[i].pos.y) * 10; 
-                        this->destination.z += (this->pos.z - g_boids[i].pos.z) * 10; 
+                        this->destination.x += (this->pos.x - g_boids[i].pos.x); 
+                        this->destination.y += (this->pos.y - g_boids[i].pos.y); 
+                        this->destination.z += (this->pos.z - g_boids[i].pos.z); 
                     }                   
                 }
             }
-            this->pos = Vector3MoveTowards(this->pos, this->destination, speed*g_boidAvoidanceSpeed);
+            return isAvoiding;
+            //this->pos = Vector3MoveTowards(this->pos, this->destination, speed*g_boidAvoidanceSpeed);
 
         }
+        bool Align(){
+            float xAverage = 0.0f;
+            float yAverage = 0.0f;
+            float zAverage = 0.0f;
+            int neighboursAmount = 0;
+            for(int i = 0; i < g_boidsAmount;i++){
+                if(g_boids[i].pos != this->pos){
+                    if(CheckCollisionSpheres(this->pos, g_boidVisionRadius, g_boids[i].pos, g_boidSizeRadius)){
+                        neighboursAmount++;
+                        xAverage += g_boids[i].pos.x;
+                        yAverage += g_boids[i].pos.y;
+                        zAverage += g_boids[i].pos.z;                        
+                    }
+                }
+            }
+            if(neighboursAmount < 1)
+                return false;
+
+            xAverage /= neighboursAmount;
+            yAverage /= neighboursAmount;
+            zAverage /= neighboursAmount;
+            destination.x += (xAverage - pos.x) * g_boidAlignment;
+            destination.y += (yAverage - pos.y) * g_boidAlignment;
+            destination.z += (zAverage - pos.z) * g_boidAlignment;
+
+            return true;
+        }
 		Vector3 destination;
-        float speed = 0.2f;
+        float speed = 0.5f;
 };
 
 
