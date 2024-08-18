@@ -28,25 +28,33 @@ std::random_device rd;
 std::default_random_engine eng(rd());
 std::uniform_real_distribution<float> distr(-g_boidDestinationLimit,g_boidDestinationLimit);  
 
+static Vector3 GetRandomVec3(){
+    return Vector3{distr(eng), distr(eng), distr(eng)};
+}
+
 class Boid{
 	public:
 		Vector3 pos;
-		Vector3 rotation;
+		float rotation;
         void Behave(){
             Avoid();
             Move();
 
         }
 		Boid(){
-			this->pos = Vector3{distr(eng), distr(eng), distr(eng)};
-			this->rotation = Vector3Zero();
-			this->destination = Vector3{distr(eng), distr(eng), distr(eng)};
+			this->pos = GetRandomVec3();
+			this->rotation = 0.0f;
+			this->destination = GetRandomVec3();
 		}
 	private:
         void Move(){
+            if(this->pos == this->destination){
+                this->destination = GetRandomVec3();
+                this->rotation = atan2(destination.x, destination.y) * -57.29578f;
+            }
             this->pos = Vector3MoveTowards(this->pos, this->destination, speed);
         }
-        bool Avoid(){
+        void Avoid(){
             bool isAvoiding = false;
             for(int i = 0; i < g_boidsAmount; i++){
                 if(g_boids[i].pos != this->pos){
@@ -55,15 +63,14 @@ class Boid{
                             isAvoiding = true;
                             this->destination = Vector3Zero();
                         }
-                        this->destination.x += (this->pos.x - g_boids[i].pos.x) * 4; 
-                        this->destination.y += (this->pos.y - g_boids[i].pos.y) * 4; 
-                        this->destination.z += (this->pos.z - g_boids[i].pos.z) * 4; 
+                        this->destination.x += (this->pos.x - g_boids[i].pos.x) * 10; 
+                        this->destination.y += (this->pos.y - g_boids[i].pos.y) * 10; 
+                        this->destination.z += (this->pos.z - g_boids[i].pos.z) * 10; 
                     }                   
                 }
             }
             this->pos = Vector3MoveTowards(this->pos, this->destination, speed*g_boidAvoidanceSpeed);
 
-            return isAvoiding;
         }
 		Vector3 destination;
         float speed = 0.2f;
@@ -90,6 +97,12 @@ int main ()
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE; 
 
+    Model model = LoadModel("models/fish/scene.gltf");                 // Load model
+    Texture2D texture = LoadTexture("models/fish/textures/fish.png"); // Load model texture
+    //SetMaterialTexture(&model.materials[0], MATERIAL_MAP_DIFFUSE, texture);
+    //model.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;  // Set map diffuse texture
+
+    BoundingBox bounds = GetMeshBoundingBox(model.meshes[0]);   // Set model bounds
 
     DisableCursor();
     SetTargetFPS(60);  
@@ -106,8 +119,9 @@ int main ()
 
             BeginMode3D(camera);
             DrawPlane({0.0f,-8.0f,0.0f}, {30.0f,30.0f}, BLACK);
+            //DrawModel(model, Vector3Zero(), 20.0f, WHITE);
             for(int i = 0; i < g_boidsAmount; i++){
-			    DrawSphere(g_boids[i].pos, g_boidRadius, PURPLE);
+			    DrawModelEx(model, g_boids[i].pos, {1,0,0}, g_boids[i].rotation,{10.0f,10.0,10.0f}, WHITE);
                 g_boids[i].Behave();
             }
             EndMode3D();

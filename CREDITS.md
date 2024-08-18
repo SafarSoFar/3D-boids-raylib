@@ -1,0 +1,1 @@
+The fish model by Denys Almaral - https://sketchfab.com/3d-models/clown-fish-low-poly-animated-af7ba2aa41d2413098a59b21cfda79c2
