@@ -26,14 +26,14 @@ class Boid;
 float g_boidSpeed = 15.0f;
 float g_boidSizeRadius = 0.5f;
 float g_boidDestinationLimit = 15.0f;
-float g_boidAvoidanceRadius = 0.4f;
-float g_boidVisionRadius = 3.0f;
-float g_boidAlignment = 0.05f;
-float g_boidAvoidanceMultiplier = 0.0005f;
-float g_boidCenteringMultiplier = 0.00005f;
-float g_boidMinSpeed = 15.0f;
-float g_boidMaxSpeed = 20.0f;
-float g_boidTurnVelocityFactor = 0.2f;
+float g_boidAvoidanceRadius = 0.7f;
+float g_boidVisionRadius = 1.0f;
+float g_boidAlignment = 0.3f;
+float g_boidAvoidanceMultiplier = 0.000005f; // makes fish go up
+float g_boidCenteringMultiplier = 0.0005f;
+float g_boidMinSpeed = 0.5f;
+float g_boidMaxSpeed = 1.0f;
+float g_boidTurnVelocityFactor = 0.02f;
 const int g_boidsAmount = 500;
 
 vector<Boid> g_boids;
@@ -53,8 +53,8 @@ class Boid{
 		float rotation;
         void Behave(){
             Avoid();
-            //Align();
-            //Unite();
+            Align();
+            Unite();
             Move();
 
         }
@@ -85,7 +85,18 @@ class Boid{
             if(this->pos.z < -g_boidDestinationLimit){
                 velocity.z += g_boidTurnVelocityFactor;
             }
-     
+
+            float speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+            if(speed > g_boidMaxSpeed){
+                velocity.x = (velocity.x/speed)*g_boidMaxSpeed;
+                velocity.y = (velocity.y/speed)*g_boidMaxSpeed;
+                velocity.z = (velocity.z/speed)*g_boidMaxSpeed;
+            }
+            if(speed < g_boidMinSpeed){
+                velocity.x = (velocity.x/speed)*g_boidMinSpeed;
+                velocity.y = (velocity.y/speed)*g_boidMinSpeed;
+                velocity.z = (velocity.z/speed)*g_boidMinSpeed;
+            }
             this->pos = this->pos + velocity;
 
             
@@ -162,8 +173,6 @@ class Boid{
             velocity.y += (yAverage - pos.y) * g_boidCenteringMultiplier;
             velocity.z += (zAverage - pos.z) * g_boidCenteringMultiplier;
         }
-        float speed;
-		//Vector3 destination;
 };
 
 
