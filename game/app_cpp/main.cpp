@@ -187,8 +187,8 @@ void CreateBoids(){
 
 int main ()
 {
-	const int screenWidth = 1280;
-    const int screenHeight = 720;
+	const int screenWidth = 1920;
+    const int screenHeight = 1080;
     CreateBoids();
 	InitWindow(screenWidth, screenHeight, "Raylib Boids simulation");
 
@@ -206,6 +206,7 @@ int main ()
     DisableCursor();
     SetTargetFPS(60);  
     rlImGuiSetup(true);
+    //ToggleFullscreen();
 
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
