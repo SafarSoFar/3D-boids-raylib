@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{21EB8090-0D4E-1035-B6D3-48EBA215DCB7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rlImGui">
+      <UniqueIdentifier>{E9C21EF9-D551-A8C2-7E70-BCBD6ADEB868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rlImGui\src">
+      <UniqueIdentifier>{80CD431F-6CF2-929F-953D-782F81C191BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{E9C7FDCE-D52A-8D73-7EB0-C5296AF258F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\app_cpp">
+      <UniqueIdentifier>{3B0661D5-2795-EA9E-D0B3-FE99BC21FB44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rlImGui">
+      <UniqueIdentifier>{B1E7EFE5-9D76-79AF-4695-8DAA32038A55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rlImGui\src">
+      <UniqueIdentifier>{48162AA6-343B-7926-5D86-5EB6490A7844}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rlImGui\src\imconfig.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imgui.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imgui_impl_raylib.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imgui_internal.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imstb_rectpack.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imstb_textedit.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\imstb_truetype.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\rlImGui.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="rlImGui\src\rlImGuiColors.h">
+      <Filter>Header Files\rlImGui\src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="app_cpp\main.cpp">
+      <Filter>Source Files\app_cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\imgui.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\imgui_demo.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\imgui_draw.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\imgui_tables.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\imgui_widgets.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="rlImGui\src\rlImGui.cpp">
+      <Filter>Source Files\rlImGui\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

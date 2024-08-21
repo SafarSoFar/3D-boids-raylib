@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include "../example_library/src/imgui.h"
+#include "../example_library/src/rlImGui.h"
 
 using namespace std;
 
@@ -28,13 +30,13 @@ float g_boidSizeRadius = 0.5f;
 float g_boidDestinationLimit = 15.0f;
 float g_boidAvoidanceRadius = 0.7f;
 float g_boidVisionRadius = 1.0f;
-float g_boidAlignment = 0.3f;
+float g_boidAlignment = 0.07f;
 float g_boidAvoidanceMultiplier = 0.000005f; // makes fish go up
-float g_boidCenteringMultiplier = 0.0005f;
-float g_boidMinSpeed = 0.5f;
+float g_boidCenteringMultiplier = 0.5f;
+float g_boidMinSpeed = 0.2f;
 float g_boidMaxSpeed = 1.0f;
-float g_boidTurnVelocityFactor = 0.02f;
-const int g_boidsAmount = 500;
+float g_boidTurnVelocityFactor = 0.08f;
+const int g_boidsAmount = 300;
 
 vector<Boid> g_boids;
 
@@ -204,6 +206,8 @@ int main ()
     BoundingBox bounds = GetMeshBoundingBox(model.meshes[0]);   // Set model bounds
     DisableCursor();
     SetTargetFPS(60);  
+    rlImGuiSetup(true);
+
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -212,8 +216,10 @@ int main ()
         
 
         BeginDrawing();
-
-            ClearBackground(RAYWHITE);
+            ClearBackground(DARKBLUE);
+            rlImGuiBegin();
+            bool open = true;
+            ImGui::ShowDemoWindow(&open);
 
             BeginMode3D(camera);
             //DrawPlane({0.0f,-8.0f,0.0f}, {30.0f,30.0f}, BLACK);
@@ -225,15 +231,17 @@ int main ()
             }
             EndMode3D();
 
-
+            DrawRectangle(screenWidth-150, 0, 150, 100, BLACK);
+            DrawText("Avoidance Multiplier", screenWidth, 150, 20, WHITE);
+    
+            rlImGuiEnd();
         EndDrawing();
 
     }
 
     /*UnloadMusicStream(music);
     CloseAudioDevice();*/
-
-
+    rlImGuiShutdown();
     CloseWindow();        // Close window and OpenGL context
 
 
