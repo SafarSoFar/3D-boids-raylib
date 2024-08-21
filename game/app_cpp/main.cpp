@@ -25,18 +25,18 @@ Vector3 operator+(Vector3 lhs, Vector3 rhs){
 
 class Boid;
 
-float g_boidSpeed = 15.0f;
+//float g_boidSpeed = 15.0f;
 float g_boidSizeRadius = 0.5f;
-float g_boidDestinationLimit = 15.0f;
+float g_boidDestinationLimit = 80.0f;
 float g_boidAvoidanceRadius = 0.7f;
 float g_boidVisionRadius = 1.0f;
-float g_boidAlignment = 0.07f;
+float g_boidAlignmentMultiplier = 0.07f;
 float g_boidAvoidanceMultiplier = 0.000005f; // makes fish go up
 float g_boidCenteringMultiplier = 0.5f;
 float g_boidMinSpeed = 0.2f;
-float g_boidMaxSpeed = 1.0f;
+float g_boidMaxSpeed = 0.5f;
 float g_boidTurnVelocityFactor = 0.08f;
-const int g_boidsAmount = 300;
+int g_boidsAmount = 300;
 
 vector<Boid> g_boids;
 
@@ -145,9 +145,9 @@ class Boid{
             xVelAverage /= neighboursAmount;
             yVelAverage /= neighboursAmount;
             zVelAverage /= neighboursAmount;
-            velocity.x += (xVelAverage - velocity.x) * g_boidAlignment;
-            velocity.y += (yVelAverage - velocity.y) * g_boidAlignment;
-            velocity.z += (zVelAverage - velocity.z) * g_boidAlignment;
+            velocity.x += (xVelAverage - velocity.x) * g_boidAlignmentMultiplier;
+            velocity.y += (yVelAverage - velocity.y) * g_boidAlignmentMultiplier;
+            velocity.z += (zVelAverage - velocity.z) * g_boidAlignmentMultiplier;
 
         }
         void Unite(){
@@ -178,18 +178,19 @@ class Boid{
 };
 
 
-
-
-int main ()
-{
+void CreateBoids(){
     for(int i = 0; i < g_boidsAmount; i++){
         Boid boid = Boid();
         g_boids.push_back(boid);
     }
-	const int screenWidth = 800;
-    const int screenHeight = 640;
+}
 
-	InitWindow(screenWidth, screenHeight, "Boids");
+int main ()
+{
+	const int screenWidth = 1280;
+    const int screenHeight = 720;
+    CreateBoids();
+	InitWindow(screenWidth, screenHeight, "Raylib Boids simulation");
 
     Camera camera = { 0};
     camera.position = Vector3{10.0f, 10.0f, 10.0f}; // Camera position
@@ -200,8 +201,6 @@ int main ()
 
     Model model = LoadModel("models/fish/scene.gltf");                 // Load model
     Texture2D texture = LoadTexture("models/fish/textures/fish.png"); // Load model texture
-    //SetMaterialTexture(&model.materials[0], MATERIAL_MAP_DIFFUSE, texture);
-    //model.materials[0].maps[MATERIAL_MAP_ALBEDO].texture = texture;  // Set map diffuse texture
 
     BoundingBox bounds = GetMeshBoundingBox(model.meshes[0]);   // Set model bounds
     DisableCursor();
@@ -211,29 +210,44 @@ int main ()
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // changed rcamera.h movement speed macro!
-        UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        // To prevent changing camera view when communicating with debug GUI
+        if(!IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){ 
+            UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        }
         
 
         BeginDrawing();
+
             ClearBackground(DARKBLUE);
             rlImGuiBegin();
-            bool open = true;
-            ImGui::ShowDemoWindow(&open);
+
+            ImGui::SliderFloat("Avoidance radius",&g_boidAvoidanceRadius, 0.3f, 2.0f);
+            ImGui::SliderFloat("Alignment multiplier",&g_boidAlignmentMultiplier, 0.07f, 1.0f);
+            ImGui::SliderFloat("Vision radius",&g_boidVisionRadius, 0.7f, 3.0f);
+            ImGui::SliderFloat("Min speed",&g_boidMinSpeed, 0.05f, 0.2f);
+            ImGui::SliderFloat("Max speed",&g_boidMaxSpeed, 0.5f, 2.0f);
+            ImGui::SliderFloat("Destination limit",&g_boidDestinationLimit, 30.0f, 80.0f);
+
+            if(ImGui::SliderInt("Boids Amount *performance expensive!*", &g_boidsAmount, 100,500)){
+                g_boids.clear();
+                CreateBoids();
+            }
+
+            if(ImGui::Button("Restart simulation")){
+                g_boids.clear();
+                CreateBoids();
+            }
 
             BeginMode3D(camera);
-            //DrawPlane({0.0f,-8.0f,0.0f}, {30.0f,30.0f}, BLACK);
+
             DrawCubeWires(Vector3Zero(), g_boidDestinationLimit * 2, g_boidDestinationLimit * 2, g_boidDestinationLimit * 2, BLUE);
-            //DrawModel(model, Vector3Zero(), 20.0f, WHITE);
             for(int i = 0; i < g_boidsAmount; i++){
 			    DrawModelEx(model, g_boids[i].pos, {1,0,0}, g_boids[i].rotation,{10.0f,10.0,10.0f}, WHITE);
                 g_boids[i].Behave();
             }
+
             EndMode3D();
 
-            DrawRectangle(screenWidth-150, 0, 150, 100, BLACK);
-            DrawText("Avoidance Multiplier", screenWidth, 150, 20, WHITE);
-    
             rlImGuiEnd();
         EndDrawing();
 
