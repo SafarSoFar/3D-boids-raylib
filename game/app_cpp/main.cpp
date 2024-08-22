@@ -23,9 +23,14 @@ Vector3 operator+(Vector3 lhs, Vector3 rhs){
     return Vector3{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
 }
 
+Vector3 operator-(Vector3 lhs, Vector3 rhs){
+    return Vector3{lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
+}
+
 class Boid;
 
-//float g_boidSpeed = 15.0f;
+float g_boidSize = 10.f;
+Vector3 g_boidSizeV ={g_boidSize,g_boidSize,g_boidSize}; 
 float g_boidSizeRadius = 0.5f;
 float g_boidDestinationLimit = 80.0f;
 float g_boidAvoidanceRadius = 0.7f;
@@ -37,6 +42,7 @@ float g_boidMinSpeed = 0.2f;
 float g_boidMaxSpeed = 0.5f;
 float g_boidTurnVelocityFactor = 0.08f;
 int g_boidsAmount = 300;
+Vector3 g_boidSpectatorOffset = Vector3{0,0,0};
 
 vector<Boid> g_boids;
 
@@ -203,6 +209,9 @@ int main ()
     Texture2D texture = LoadTexture("models/fish/textures/fish.png"); // Load model texture
 
     BoundingBox bounds = GetMeshBoundingBox(model.meshes[0]);   // Set model bounds
+
+    bool spectateBoid = false;
+
     DisableCursor();
     SetTargetFPS(60);  
     rlImGuiSetup(true);
@@ -212,7 +221,7 @@ int main ()
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // To prevent changing camera view when communicating with debug GUI
-        if(!IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){ 
+        if(!IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || !spectateBoid){ 
             UpdateCamera(&camera, CAMERA_FIRST_PERSON);
         }
         
@@ -229,7 +238,7 @@ int main ()
             ImGui::SliderFloat("Max speed",&g_boidMaxSpeed, 0.5f, 2.0f);
             ImGui::SliderFloat("Destination limit",&g_boidDestinationLimit, 30.0f, 80.0f);
 
-            if(ImGui::SliderInt("Boids Amount *performance expensive!*", &g_boidsAmount, 100,500)){
+            if(ImGui::SliderInt("Boids amount *performance expensive!*", &g_boidsAmount, 100,500)){
                 g_boids.clear();
                 CreateBoids();
             }
@@ -239,11 +248,28 @@ int main ()
                 CreateBoids();
             }
 
+            if(ImGui::SliderFloat("Boid size",&g_boidSize, 10.f, 30.f)){
+                g_boidSizeV = {g_boidSize, g_boidSize, g_boidSize};
+            }
+
+            if(ImGui::Button("Free/Boid spectator mode")){
+                spectateBoid = !spectateBoid;
+            }
+
+            ImGui::SliderFloat("Boid spectator X offset",&g_boidSpectatorOffset.x, 0.f, 5.0f);
+            ImGui::SliderFloat("Boid spectator Y offset",&g_boidSpectatorOffset.y, 0.f, 5.0f);
+            ImGui::SliderFloat("Boid spectator Z offset",&g_boidSpectatorOffset.z, 0.f, 5.0f);
+
+
             BeginMode3D(camera);
+
+            if(spectateBoid){
+                camera.position = g_boids[0].pos + g_boidSpectatorOffset;
+            }
 
             DrawCubeWires(Vector3Zero(), g_boidDestinationLimit * 2, g_boidDestinationLimit * 2, g_boidDestinationLimit * 2, BLUE);
             for(int i = 0; i < g_boidsAmount; i++){
-			    DrawModelEx(model, g_boids[i].pos, {1,0,0}, g_boids[i].rotation,{10.0f,10.0,10.0f}, WHITE);
+			    DrawModelEx(model, g_boids[i].pos, {1,0,0}, g_boids[i].rotation,g_boidSizeV, WHITE);
                 g_boids[i].Behave();
             }
 
